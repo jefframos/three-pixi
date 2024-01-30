@@ -1,5 +1,5 @@
 import { Program } from "pixi.js";
-import { Material, MeshShader } from "pixi3d/pixi7";
+import { Material, MeshShader, StandardMaterial } from "pixi3d/pixi7";
 import mat1 from "./BendMaterial";
 import { IMaterial } from './IMaterial';
 import Signals from 'signals';
@@ -35,5 +35,16 @@ export default class CustomMaterial extends Material {
     }
     createShader() {
         return new MeshShader(Program.from(this.IMaterial.getVertexShader(), this.IMaterial.getFragmentShader()));
+    }
+    setUniformData(field: string, value: any) {
+
+    }
+
+    getUniformData(field: string, value: any) {
+
+    }
+
+    hasUniformData(field: string): boolean {
+        return this.uniforms && this.uniforms.hasOwnProperty(field)
     }
 }

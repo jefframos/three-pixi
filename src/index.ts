@@ -51,34 +51,35 @@ const manifest = {
 
 await Assets.init({ manifest })
 let assets = await Assets.loadBundle("assets")
+const bendMaterial = new CustomMaterial(new BendMaterial())
 
-
-const road = new Base3D(Model.from(assets.ground1), new CustomMaterial(new BendMaterial()))
+const lenght = 120
+const road = new Base3D(Model.from(assets.ground1), bendMaterial)
 app.stage.addChild(road);
 road.model.z = -35
 road.model.y = -3
-road.model.scale.set(10, 1, 40)
+road.model.scale.set(10, 1, lenght)
 
 
 
 
 
 
-const car = new Base3D(Model.from(assets.donkey), new CustomMaterial(new BendMaterial()))
+const car = new Base3D(Model.from(assets.donkey), bendMaterial)
 app.stage.addChild(car);
 car.model.z = -30
 car.model.y = -3
 //car.model.scale.set(2)
-car.model.rotationQuaternion = Quaternion.fromEuler(0,180,0)
+//car.model.rotationQuaternion = Quaternion.fromEuler(0, 180, 0)
 console.log(car)
 
-for (let anim of car.model.animations) {
-  // Start to play all animations in the model.
-  console.log(anim)
-  anim.play();
-  anim.loop = false;
-  anim.speed = 1.2;
-}
+// for (let anim of car.model.animations) {
+//   // Start to play all animations in the model.
+//   console.log(anim)
+//   anim.play();
+//   anim.loop = false;
+//   anim.speed = 1.2;
+// }
 
 
 
@@ -120,20 +121,22 @@ ticker.add(update);
 const cars = [];
 const buildings = [];
 
+
+
 for (let index = 0; index < 8; index++) {
-  const cube = new Base3D(Model.from(assets.cube1), new CustomMaterial(new BendMaterial()))
+  const cube = new Base3D(Model.from(assets.cube1), bendMaterial)
   app.stage.addChild(cube);
-  cube.model.z = index * 10
+  cube.model.z = index * lenght*2 / 8
   cube.model.x = -15
-  cube.model.scale.set(5, Math.random() * 7 + 2, 5)
+  cube.model.scale.set(5, Math.random() * 7 + 2, lenght / 8)
   cube.model.y = -cube.model.scale.y / 2
   buildings.push(cube)
 
-  const cube2 = new Base3D(Model.from(assets.cube1), new CustomMaterial(new BendMaterial()))
+  const cube2 = new Base3D(Model.from(assets.cube1), bendMaterial)
   app.stage.addChild(cube2);
-  cube2.model.z = index * 10
+  cube2.model.z = index * lenght*2 / 8
   cube2.model.x = 15
-  cube2.model.scale.set(5, Math.random() * 7 + 2, 5)
+  cube2.model.scale.set(5, Math.random() * 7 + 2, lenght / 8)
   cube2.model.y = -cube2.model.scale.y / 2
   buildings.push(cube2)
 }
@@ -141,9 +144,9 @@ for (let index = 0; index < 8; index++) {
 
 
 for (let index = 0; index < 8; index++) {
-  const cube = new Base3D(Model.from(assets.cube1), new CustomMaterial(new BendMaterial()))
+  const cube = new Base3D(Model.from(assets.cube1), bendMaterial)
   app.stage.addChild(cube);
-  cube.model.z = -80 * Math.random() - 50
+  cube.model.z = -80 * Math.random() - lenght*2 / 8
   cube.model.y = -3
   cube.model.x = 8 * Math.sin(Math.random() * Math.PI * 2)
   cars.push(cube)
@@ -151,18 +154,34 @@ for (let index = 0; index < 8; index++) {
 
 let angSin = 0
 let time = 0
+const timScale = 1
 function update(delta: number) {
+
+  if (bendMaterial.hasUniformData('v_Time')) {
+    bendMaterial.uniforms['v_Time'] += delta / 100  * timScale
+  }
+
+  if (bendMaterial.hasUniformData('v_zed')) {
+    bendMaterial.uniforms['v_zed'] += delta / 100 * timScale
+  }
+
+  if (bendMaterial.hasUniformData('v_Time2')) {
+    bendMaterial.uniforms['v_Time2'] += delta / 100  * timScale
+  }
+  if (bendMaterial.hasUniformData('v_Time3')) {
+    bendMaterial.uniforms['v_Time3'] += delta / 100  * timScale
+  }
+  bendMaterial.refreshUniforms(bendMaterial.uniforms)
 
   time += delta
   road.update(delta);
 
   car.update(delta)
   car.model.z = -10
+  //car.model.y = -3 - Math.sin(time * 0.2) * 0.2
 
-  car.model.y = -3 - Math.sin(time * 0.2) * 0.2
 
-
-  car.model.rotationQuaternion  = Quaternion.fromEuler(0,180 + Math.sin(time * 0.2), Math.cos(time*0.3) * 8)
+  //car.model.rotationQuaternion = Quaternion.fromEuler(0, 180, 0)
 
   buildings.forEach(element => {
 
@@ -170,7 +189,7 @@ function update(delta: number) {
     element.model.z += 0.5 * delta;
 
     if (element.model.z > 5) {
-      element.model.z -= 80
+      element.model.z -= lenght*2
     }
   });
 
@@ -180,7 +199,7 @@ function update(delta: number) {
     element.model.z += 0.5 * delta;
 
     if (element.model.z > 5) {
-      element.model.z -= 80
+      element.model.z -= lenght*2
     }
   });
 }

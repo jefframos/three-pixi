@@ -32,6 +32,18 @@ export default class BendMaterial implements IMaterial {
         scale.z = length(mat[2].xyz);
         return scale;
     }
+    float cubicInterpolation(float p0, float p1, float p2, float p3, float t) {
+        float t2 = t * t;
+        float a0 = p3 - p2 - p0 + p1;
+        float a1 = p0 - p1 - a0;
+        float a2 = p2 - p0;
+        float a3 = p1;
+    
+        return a0 * t * t2 + a1 * t2 + a2 * t + a3;
+    }
+    float lerp(float a, float b, float t) {
+        return a * (1.0 - t) + b * t;
+    }
     void main() {
       v_Position = a_Position;
       vec4 worldPosition = u_Model * vec4(v_Position, 1.0);
@@ -39,16 +51,25 @@ export default class BendMaterial implements IMaterial {
       vec4 projectionPosition = u_ViewProjection * vec4(v_Position, 1.0);
       //vDepth = pow(1.-a_UV1.g, 1.5);//-v_Position.z;
       vDepth =  worldPosition.z * -0.05;//v_zed * worldPosition.z;
-      vDepth = pow(vDepth, 1.25);
+      //vDepth = pow(vDepth, 1.25);
       vec3 scale = extractScale(u_Model);
 
-      vScale = 6. / worldPosition.z;
-
-       float normalizedDistance = 5.;      
+      
+      float position = -worldPosition.z; // Your input position value
+      float startValue = -40.; // Start value of the curve
+      float endValue = -120.; // End value of the curve
+  
+      // Cubic interpolation between start and end values
+      //float interpolatedValue = cubicInterpolation(startValue, startValue, endValue, endValue, position);
+      float interpolatedValue = lerp(startValue, endValue, position);
+  
+      // Calculate the normalized value
+      float vScale = clamp((interpolatedValue - startValue) / (endValue - startValue), 0.0, 1.0);
+         
       float time2 = sin(v_Time2 ) + cos(v_Time3);
       float time3 = cos(v_Time3) * time2;
       float wightX = 10.25 / scale.x;
-      float wightY = 8.65 / scale.y;        
+      float wightY = 10.65 / scale.y;        
 
         float displacementY = time2 * (sin(v_Time2 + vDepth) * wightY) * vScale;
         float displacementY0 = time2 * (sin(v_Time2 + 0.) * wightY) * vScale;
@@ -72,7 +93,7 @@ export default class BendMaterial implements IMaterial {
     void main(void) {
         //getBaseColorUV()
         //finalColor = mix(vColor, fogColor, fogFactor);
-        gl_FragColor = vec4(v_UVCoord1.xy, 0., 1.0);
+        gl_FragColor = vec4(v_UVCoord1.xy, 1., 1.0);
         //gl_FragColor = vec4(mix(vColor, fogColor, fogFactor), 1.0);
         
     }
@@ -119,8 +140,8 @@ export default class BendMaterial implements IMaterial {
         }
         shader.uniforms.u_ViewProjection = Camera.main.viewProjection.array;
         shader.uniforms.u_Model = mesh.worldTransform.array;
-        shader.uniforms.vColor = [0.2,0.4,0.1];
-        shader.uniforms.fogColor = [1,1,1];
+        shader.uniforms.vColor = [0.2, 0.4, 0.1];
+        shader.uniforms.fogColor = [1, 1, 1];
         shader.uniforms.fogFactor = 0.5;
     }
     updateUniforms(data: any): void {
