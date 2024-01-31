@@ -16,18 +16,18 @@ const manifest = {
   bundles: [{
     name: "assets",
     assets: [
-      {
-        name: "diffuse",
-        srcs: "assets/chromatic/diffuse.cubemap",
-      },
-      {
-        name: "specular",
-        srcs: "assets/chromatic/specular.cubemap",
-      },
-      {
-        name: "boat",
-        srcs: "models/boat_large.gltf",
-      },
+      // {
+      //   name: "diffuse",
+      //   srcs: "assets/chromatic/diffuse.cubemap",
+      // },
+      // {
+      //   name: "specular",
+      //   srcs: "assets/chromatic/specular.cubemap",
+      // },
+      // {
+      //   name: "boat",
+      //   srcs: "models/boat_large.gltf",
+      // },
       {
         name: "donkey",
         srcs: "models/donkey.glb",
@@ -39,10 +39,10 @@ const manifest = {
         name: "cube1",
         srcs: "models/cube1.glb",
       },
-      {
-        name: "teapot",
-        srcs: "https://raw.githubusercontent.com/jnsmalm/pixi3d-examples/master/assets/teapot/teapot.gltf",
-      },
+      // {
+      //   name: "teapot",
+      //   srcs: "https://raw.githubusercontent.com/jnsmalm/pixi3d-examples/master/assets/teapot/teapot.gltf",
+      // },
     ],
   }]
 }
@@ -67,7 +67,7 @@ road.model.scale.set(10, 1, lenght)
 
 const car = new Base3D(Model.from(assets.donkey), bendMaterial)
 app.stage.addChild(car);
-car.model.z = -30
+car.model.z = 0
 car.model.y = -3
 //car.model.scale.set(2)
 //car.model.rotationQuaternion = Quaternion.fromEuler(0, 180, 0)
@@ -107,8 +107,8 @@ let pipeline = app.renderer.plugins.pipeline
 //let control = new CameraOrbitControl(app.view as HTMLCanvasElement);
 
 const mainCamera = Camera.main;
-mainCamera.fieldOfView = 80
-mainCamera.z = 0
+mainCamera.fieldOfView = 120
+mainCamera.z = 5
 mainCamera.y = 8
 mainCamera.x = 0
 
@@ -155,29 +155,32 @@ for (let index = 0; index < 8; index++) {
 let angSin = 0
 let time = 0
 const timScale = 1
+
+const speed = 50
 function update(delta: number) {
 
+  delta = delta / 100
   if (bendMaterial.hasUniformData('v_Time')) {
-    bendMaterial.uniforms['v_Time'] += delta / 100  * timScale
+    bendMaterial.uniforms['v_Time'] += speed * delta * timScale / 100
   }
 
-  if (bendMaterial.hasUniformData('v_zed')) {
-    bendMaterial.uniforms['v_zed'] += delta / 100 * timScale
-  }
+  // if (bendMaterial.hasUniformData('v_zed')) {
+  //   bendMaterial.uniforms['v_zed'] += delta / 100 * timScale
+  // }
 
-  if (bendMaterial.hasUniformData('v_Time2')) {
-    bendMaterial.uniforms['v_Time2'] += delta / 100  * timScale
-  }
-  if (bendMaterial.hasUniformData('v_Time3')) {
-    bendMaterial.uniforms['v_Time3'] += delta / 100  * timScale
-  }
+  // if (bendMaterial.hasUniformData('v_Time2')) {
+  //   bendMaterial.uniforms['v_Time2'] += delta / 100  * timScale
+  // }
+  // if (bendMaterial.hasUniformData('v_Time3')) {
+  //   bendMaterial.uniforms['v_Time3'] += delta / 100  * timScale
+  // }
   bendMaterial.refreshUniforms(bendMaterial.uniforms)
 
   time += delta
   road.update(delta);
 
   car.update(delta)
-  car.model.z = -10
+  car.model.z = 0
   //car.model.y = -3 - Math.sin(time * 0.2) * 0.2
 
 
@@ -186,9 +189,9 @@ function update(delta: number) {
   buildings.forEach(element => {
 
     element.update(delta)
-    element.model.z += 0.5 * delta;
+    element.model.z += speed * delta;
 
-    if (element.model.z > 5) {
+    if (element.model.z > 20) {
       element.model.z -= lenght*2
     }
   });
@@ -196,7 +199,7 @@ function update(delta: number) {
   cars.forEach(element => {
 
     element.update(delta)
-    element.model.z += 0.5 * delta;
+    element.model.z += speed * delta;
 
     if (element.model.z > 5) {
       element.model.z -= lenght*2

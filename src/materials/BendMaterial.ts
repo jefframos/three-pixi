@@ -34,12 +34,14 @@ export default class BendMaterial implements IMaterial {
     }
     float cubicInterpolation(float p0, float p1, float p2, float p3, float t) {
         float t2 = t * t;
+        float t3 = t2 * t;
         float a0 = p3 - p2 - p0 + p1;
         float a1 = p0 - p1 - a0;
         float a2 = p2 - p0;
         float a3 = p1;
-    
-        return a0 * t * t2 + a1 * t2 + a2 * t + a3;
+        
+        // Apply ease-in-out effect
+        return a0 * t3 * 2. + a1 * t2 * 3. + a2 * t * 3. + a3;
     }
     float lerp(float a, float b, float t) {
         return a * (1.0 - t) + b * t;
@@ -55,29 +57,31 @@ export default class BendMaterial implements IMaterial {
       vec3 scale = extractScale(u_Model);
 
       
-      float position = -worldPosition.z; // Your input position value
-      float startValue = -40.; // Start value of the curve
-      float endValue = -120.; // End value of the curve
+      float startValue = -30.; // Start value of the curve
+      float endValue = -350.; // End value of the curve
+      float position = worldPosition.z; // Your input position value
   
       // Cubic interpolation between start and end values
-      //float interpolatedValue = cubicInterpolation(startValue, startValue, endValue, endValue, position);
-      float interpolatedValue = lerp(startValue, endValue, position);
+      float interpolatedValue = cubicInterpolation(startValue, startValue, endValue, endValue,  position / (endValue - startValue));
+      //float interpolatedValue = lerp(startValue, endValue, position / (endValue - startValue));
   
       // Calculate the normalized value
-      float vScale = clamp((interpolatedValue - startValue) / (endValue - startValue), 0.0, 1.0);
+      
+      float vScale = clamp((interpolatedValue) / (endValue - startValue), 0.0, 1.0);
+
+      vScale = pow(vScale, 3.);
          
-      float time2 = sin(v_Time2 ) + cos(v_Time3);
-      float time3 = cos(v_Time3) * time2;
-      float wightX = 10.25 / scale.x;
-      float wightY = 10.65 / scale.y;        
+      float time2 = sin(v_Time + 0.5 ) + cos(v_Time + 0.1);
+      float time3 = cos(v_Time + 0.5) * time2;
+      float wightX = 80.25 / scale.x;
+      float wightY = 25.65 / scale.y;        
 
-        float displacementY = time2 * (sin(v_Time2 + vDepth) * wightY) * vScale;
-        float displacementY0 = time2 * (sin(v_Time2 + 0.) * wightY) * vScale;
+    //  float displacementY = (time2 * (sin(v_Time2 + vDepth) * wightY)) * -vScale;
+      float displacementY = -vScale * vDepth  / scale.y * (5. + (sin(v_Time) * 4.));
 
-        float displacementX = time3 * (cos(v_Time + vDepth) * wightX ) * vScale;
-        float displacementX0 = time3 * (cos(v_Time + 0.) * wightX ) * vScale;
+    float displacementX =cos(v_Time + time2+time3+  vDepth) * wightX  * vScale;
 
-        vec3 displacedPosition = v_Position + vec3(displacementX - displacementX0, displacementY - displacementY0, 0.0);
+    vec3 displacedPosition = v_Position + vec3(displacementX, displacementY, 0.0);
 
       v_UVCoord1 = a_UV1;
       gl_Position = u_ViewProjection * u_Model * vec4(displacedPosition, 1.0);
