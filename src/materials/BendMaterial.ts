@@ -1,5 +1,5 @@
 import { Program } from "pixi.js";
-import { Camera, Material, MeshShader } from "pixi3d/pixi7";
+import { Camera, Material, Mesh3D, MeshShader } from "pixi3d/pixi7";
 import customMat1 from "./CustomMaterial";
 import { IMaterial } from "./IMaterial";
 
@@ -14,12 +14,14 @@ export default class BendMaterial implements IMaterial {
     varying vec3 v_Position;
     varying vec3 v_Normal;
     varying vec2 v_UVCoord1;
+    
     uniform vec3 vColor;
     uniform float v_Time;
     uniform float v_Time2;
     uniform float v_Time3;
     uniform float v_zed;
     
+    uniform mat4 u_RotationMatrix;
     uniform mat4 u_ViewProjection;
     uniform mat4 u_Model;
     
@@ -51,10 +53,10 @@ export default class BendMaterial implements IMaterial {
       vec4 worldPosition = u_Model * vec4(v_Position, 1.0);
       vec3 translation = u_Model[3].xyz;
       vec4 projectionPosition = u_ViewProjection * vec4(v_Position, 1.0);
-      //vDepth = pow(1.-a_UV1.g, 1.5);//-v_Position.z;
-      vDepth =  worldPosition.z * -0.05;//v_zed * worldPosition.z;
-      //vDepth = pow(vDepth, 1.25);
+      vDepth =  worldPosition.z * -0.05;
       vec3 scale = extractScale(u_Model);
+
+      vec4 transformedPosition = u_RotationMatrix * vec4(v_Position, 1.0) * projectionPosition;
 
       
       float startValue = -30.; // Start value of the curve
@@ -77,7 +79,7 @@ export default class BendMaterial implements IMaterial {
       float wightY = 25.65 / scale.y;        
 
     //  float displacementY = (time2 * (sin(v_Time2 + vDepth) * wightY)) * -vScale;
-      float displacementY = -vScale * vDepth  / scale.y * (5. + (sin(v_Time) * 4.));
+      float displacementY = -vScale * vDepth  / scale.y * (5. + (sin(v_Time) * 1.));
 
     float displacementX =cos(v_Time + time2+time3+  vDepth) * wightX  * vScale;
 
@@ -91,14 +93,17 @@ export default class BendMaterial implements IMaterial {
     public fragmentShader = `
     uniform vec3 vColor;
     varying vec2 v_UVCoord1;
+
     uniform float fogFactor; // Fog factor (0.0 to 1.0)
     uniform vec3 fogColor; // Fog color
+    uniform sampler2D uSampler;
 
     void main(void) {
         //getBaseColorUV()
         //finalColor = mix(vColor, fogColor, fogFactor);
         gl_FragColor = vec4(v_UVCoord1.xy, 1., 1.0);
         //gl_FragColor = vec4(mix(vColor, fogColor, fogFactor), 1.0);
+        //gl_FragColor = texture2D(uSampler, v_UVCoord1);
         
     }
     `;
@@ -119,7 +124,7 @@ export default class BendMaterial implements IMaterial {
         //if(this._uniforms)
         //console.log(this._uniforms['v_zed'])
     }
-    update(mesh, shader) {
+    update(mesh: Mesh3D, shader) {
 
         for (const key in this._uniforms) {
             if (Object.prototype.hasOwnProperty.call(this._uniforms, key)) {
@@ -142,11 +147,23 @@ export default class BendMaterial implements IMaterial {
         if (shader.uniforms.v_Time3 === undefined) {
             shader.uniforms.v_Time3 = 0;
         }
+
+        if (shader.uniforms.u_RotationMatrix === undefined) {
+            shader.uniforms.u_RotationMatrix = mesh.rotationQuaternion.array;
+        }
         shader.uniforms.u_ViewProjection = Camera.main.viewProjection.array;
+
+
+        //shader.uniforms.u_RotationMatrix = mesh.rotationQuaternion.array;
         shader.uniforms.u_Model = mesh.worldTransform.array;
         shader.uniforms.vColor = [0.2, 0.4, 0.1];
         shader.uniforms.fogColor = [1, 1, 1];
         shader.uniforms.fogFactor = 0.5;
+    }
+    setUniformData(field: string, value: any): void {
+        if (this._uniforms && this._uniforms[field]) {
+            this._uniforms[field] = value;
+        }
     }
     updateUniforms(data: any): void {
 

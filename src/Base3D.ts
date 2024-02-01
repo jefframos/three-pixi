@@ -28,7 +28,7 @@ export default class Base3D extends Container {
 
     }
     update(delta: number) {
-       
+        this.material.setUniformData('u_RotationMatrix', this.model.rotationQuaternion.array)
     }
     
 }

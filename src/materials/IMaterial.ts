@@ -9,4 +9,5 @@ export interface IMaterial {
     getUpdateCallback(): (mesh: any, shader: any) => void
     updateUniforms(data:any):void
     refreshUniforms(uniforms:any):void
+    setUniformData(field:string, value:any):void
 }

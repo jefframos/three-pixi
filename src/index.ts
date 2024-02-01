@@ -35,9 +35,19 @@ const manifest = {
       {
         name: "ground1",
         srcs: "models/ground1.glb",
-      }, {
+      }
+      , {
         name: "cube1",
         srcs: "models/cube1.glb",
+      }
+      , 
+      {
+        name: "crate",
+        srcs: "models/crate.glb",
+      },
+      {
+        name: "shark",
+        srcs: "models/shark.glb",
       },
       // {
       //   name: "teapot",
@@ -62,9 +72,12 @@ road.model.scale.set(10, 1, lenght)
 
 
 
+const donkey = Model.from(assets.donkey)
+//app.stage.addChild(donkey);
+console.log(donkey)
 
 
-
+//const car = new Base3D(Model.from(assets.donkey), bendMaterial)
 const car = new Base3D(Model.from(assets.donkey), bendMaterial)
 app.stage.addChild(car);
 car.model.z = 0
@@ -107,8 +120,8 @@ let pipeline = app.renderer.plugins.pipeline
 //let control = new CameraOrbitControl(app.view as HTMLCanvasElement);
 
 const mainCamera = Camera.main;
-mainCamera.fieldOfView = 120
-mainCamera.z = 5
+mainCamera.fieldOfView = 70
+mainCamera.z = 15
 mainCamera.y = 8
 mainCamera.x = 0
 
@@ -144,11 +157,24 @@ for (let index = 0; index < 8; index++) {
 
 
 for (let index = 0; index < 8; index++) {
-  const cube = new Base3D(Model.from(assets.cube1), bendMaterial)
+  const cube = new Base3D(Model.from(assets.crate), bendMaterial)
   app.stage.addChild(cube);
   cube.model.z = -80 * Math.random() - lenght*2 / 8
-  cube.model.y = -3
+  cube.model.y = -1.5
   cube.model.x = 8 * Math.sin(Math.random() * Math.PI * 2)
+  cube.model.scale.set(3)
+  cars.push(cube)
+}
+
+for (let index = 0; index < 3; index++) {
+  const cube = new Base3D(Model.from(assets.shark), bendMaterial)
+  app.stage.addChild(cube);
+  cube.model.z = (-120 / 3) * index 
+  cube.model.y = 20
+  cube.model.rotationQuaternion = Quaternion.fromEuler(0, -90, 0)
+  console.log(cube.model.rotationQuaternion)
+  cube.model.x = 20 * Math.sin(Math.random() * Math.PI * 2)
+  cube.model.scale.set(3)
   cars.push(cube)
 }
 
@@ -201,7 +227,7 @@ function update(delta: number) {
     element.update(delta)
     element.model.z += speed * delta;
 
-    if (element.model.z > 5) {
+    if (element.model.z > 20) {
       element.model.z -= lenght*2
     }
   });

@@ -37,7 +37,7 @@ export default class CustomMaterial extends Material {
         return new MeshShader(Program.from(this.IMaterial.getVertexShader(), this.IMaterial.getFragmentShader()));
     }
     setUniformData(field: string, value: any) {
-
+        this.IMaterial.setUniformData(field, value)
     }
 
     getUniformData(field: string, value: any) {
